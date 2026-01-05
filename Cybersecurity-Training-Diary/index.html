@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cybersecurity Diary – Interactive Index</title>
+
+  <style>
+    :root {
+      --bg: #0b1220;
+      --card: #111a2e;
+      --accent: #2f81f7;
+      --accent-soft: #1f6feb;
+      --text: #e6edf3;
+      --muted: #8b949e;
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: "Segoe UI", system-ui, sans-serif;
+    }
+
+    body {
+      margin: 0;
+      background: radial-gradient(circle at top, #0d1b3d, var(--bg));
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    header {
+      padding: 2.5rem 1rem 1.5rem;
+      text-align: center;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 2.2rem;
+      background: linear-gradient(90deg, #58a6ff, #2f81f7);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    header p {
+      margin-top: 0.6rem;
+      color: var(--muted);
+      font-size: 1.1rem;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 1rem;
+    }
+
+    .controls {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 2rem;
+    }
+
+    .controls input {
+      padding: 0.8rem 1.2rem;
+      border-radius: 12px;
+      border: 1px solid #30363d;
+      background: var(--card);
+      color: var(--text);
+      width: 100%;
+      max-width: 400px;
+      font-size: 1rem;
+      transition: border-color 0.2s;
+    }
+
+    .controls input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .card {
+      background: linear-gradient(180deg, #161b22, var(--card));
+      border: 1px solid #30363d;
+      border-radius: 12px;
+      padding: 1.2rem;
+      transition: transform 0.2s ease, border-color 0.2s ease;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      border-color: var(--accent);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+
+    .card h3 {
+      margin: 0;
+      font-size: 1.2rem;
+      color: #58a6ff;
+    }
+
+    /* Removed .card .date style block */
+
+    .card .topic {
+      font-size: 0.95rem;
+      color: var(--text);
+      margin: 0.5rem 0 1.2rem;
+      line-height: 1.4;
+      flex-grow: 1; /* Pushes button down */
+    }
+
+    .card button {
+      width: 100%;
+      padding: 0.6rem;
+      font-size: 0.9rem;
+      background: #238636;
+      color: white;
+      border: 1px solid rgba(240, 246, 252, 0.1);
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background 0.2s;
+    }
+
+    .card button:hover {
+      background: #2ea043;
+    }
+
+    /* MODAL VIEWER */
+    .viewer {
+      position: fixed;
+      inset: 0;
+      background: rgba(1, 4, 9, 0.9);
+      backdrop-filter: blur(5px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .viewer.active {
+      display: flex;
+    }
+
+    .viewer-box {
+      width: 90%;
+      height: 90%;
+      background: #0d1117;
+      border-radius: 12px;
+      position: relative;
+      box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
+      border: 1px solid #30363d;
+    }
+
+    .viewer iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      border-radius: 12px;
+    }
+
+    .close-btn {
+      position: absolute;
+      top: -15px;
+      right: -15px;
+      background: #da3633;
+      border: 2px solid #0d1117;
+      color: white;
+      width: 35px;
+      height: 35px;
+      border-radius: 50%;
+      font-size: 1.2rem;
+      cursor: pointer;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    footer {
+      text-align: center;
+      padding: 2rem 1rem;
+      font-size: 0.85rem;
+      color: var(--muted);
+      border-top: 1px solid #30363d;
+      margin-top: 3rem;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Cybersecurity Training Diary</h1>
+    <p>6-Month Comprehensive Training Log <br> Jaskaran Minhas</p>
+  </header>
+
+  <div class="container">
+    <div class="controls">
+      <input type="text" id="search" placeholder="Search by Topic or Day (e.g., 'Python', 'Day 50')" />
+    </div>
+
+    <div class="grid" id="grid">
+      </div>
+  </div>
+
+  <footer>
+    © 2026 | Cybersecurity Training & Internship | Jaskaran Minhas
+  </footer>
+
+  <div class="viewer" id="viewer">
+    <div class="viewer-box">
+      <button class="close-btn" onclick="closeViewer()">×</button>
+      <iframe id="pdfFrame"></iframe>
+    </div>
+  </div>
+
+  <script>
+    // Full Schedule Data (Dates Removed)
+    const diaryData = [
+      { id: 1, topic: "Networking Fundamentals" },
+      { id: 2, topic: "IP Addressing and Subnetting" },
+      { id: 3, topic: "OSI & TCP/IP Models" },
+      { id: 4, topic: "DNS, DHCP and Protocols" },
+      { id: 5, topic: "Wireshark Packet Analysis" },
+      { id: 6, topic: "Kali Linux Installation & Setup" },
+      { id: 7, topic: "Linux Commands Practical" },
+      { id: 8, topic: "Ethical Hacking Concepts" },
+      { id: 9, topic: "Footprinting & Reconnaissance" },
+      { id: 10, topic: "Network Scanning using Nmap" },
+      { id: 11, topic: "Enumeration Techniques" },
+      { id: 12, topic: "Vulnerability Assessment" },
+      { id: 13, topic: "System Hacking" },
+      { id: 14, topic: "Web Application Attacks" },
+      { id: 15, topic: "SQL Injection" },
+      { id: 16, topic: "XSS and CSRF" },
+      { id: 17, topic: "Sniffing & Spoofing" },
+      { id: 18, topic: "Session Hijacking" },
+      { id: 19, topic: "Python for Pentesting" },
+      { id: 20, topic: "Shell Scripting" },
+      { id: 21, topic: "Social Engineering" },
+      { id: 22, topic: "DoS & DDoS Attacks" },
+      { id: 23, topic: "Wireless Security" },
+      { id: 24, topic: "Mobile Security" },
+      { id: 25, topic: "Android Pentesting" },
+      { id: 26, topic: "Cryptography" },
+      { id: 27, topic: "Steganography" },
+      { id: 28, topic: "Malware Analysis" },
+      { id: 29, topic: "Digital Forensics" },
+      { id: 30, topic: "Dark Web & Anonymity" },
+      { id: 31, topic: "Firewall & WAF" },
+      { id: 32, topic: "Career Guidance" },
+      { id: 33, topic: "Networking Fundamentals" },
+      { id: 34, topic: "IP Addressing and Subnetting" },
+      { id: 35, topic: "OSI & TCP/IP Models" },
+      { id: 36, topic: "DNS, DHCP and Protocols" },
+      { id: 37, topic: "Wireshark Packet Analysis" },
+      { id: 38, topic: "Kali Linux Installation & Setup" },
+      { id: 39, topic: "Linux Commands Practical" },
+      { id: 40, topic: "Ethical Hacking Concepts" },
+      { id: 41, topic: "Footprinting & Reconnaissance" },
+      { id: 42, topic: "Network Scanning using Nmap" },
+      { id: 43, topic: "Enumeration Techniques" },
+      { id: 44, topic: "Vulnerability Assessment" },
+      { id: 45, topic: "System Hacking" },
+      { id: 46, topic: "Web Application Attacks" },
+      { id: 47, topic: "SQL Injection" },
+      { id: 48, topic: "XSS and CSRF" },
+      { id: 49, topic: "Sniffing & Spoofing" },
+      { id: 50, topic: "Session Hijacking" },
+      { id: 51, topic: "Python for Pentesting" },
+      { id: 52, topic: "Shell Scripting" },
+      { id: 53, topic: "Social Engineering" },
+      { id: 54, topic: "DoS & DDoS Attacks" },
+      { id: 55, topic: "Wireless Security" },
+      { id: 56, topic: "Mobile Security" },
+      { id: 57, topic: "Android Pentesting" },
+      { id: 58, topic: "Cryptography" },
+      { id: 59, topic: "Steganography" },
+      { id: 60, topic: "Malware Analysis" },
+      { id: 61, topic: "Digital Forensics" },
+      { id: 62, topic: "Dark Web & Anonymity" },
+      { id: 63, topic: "Firewall & WAF" },
+      { id: 64, topic: "Career Guidance" },
+      { id: 65, topic: "Networking Fundamentals" },
+      { id: 66, topic: "IP Addressing and Subnetting" },
+      { id: 67, topic: "OSI & TCP/IP Models" },
+      { id: 68, topic: "DNS, DHCP and Protocols" },
+      { id: 69, topic: "Wireshark Packet Analysis" },
+      { id: 70, topic: "Kali Linux Installation & Setup" },
+      { id: 71, topic: "Linux Commands Practical" },
+      { id: 72, topic: "Ethical Hacking Concepts" },
+      { id: 73, topic: "Footprinting & Reconnaissance" },
+      { id: 74, topic: "Network Scanning using Nmap" },
+      { id: 75, topic: "Enumeration Techniques" },
+      { id: 76, topic: "Vulnerability Assessment" },
+      { id: 77, topic: "System Hacking" },
+      { id: 78, topic: "Web Application Attacks" },
+      { id: 79, topic: "SQL Injection" },
+      { id: 80, topic: "XSS and CSRF" },
+      { id: 81, topic: "Sniffing & Spoofing" },
+      { id: 82, topic: "Session Hijacking" },
+      { id: 83, topic: "Python for Pentesting" },
+      { id: 84, topic: "Shell Scripting" },
+      { id: 85, topic: "Social Engineering" },
+      { id: 86, topic: "DoS & DDoS Attacks" },
+      { id: 87, topic: "Wireless Security" },
+      { id: 88, topic: "Mobile Security" },
+      { id: 89, topic: "Android Pentesting" },
+      { id: 90, topic: "Cryptography" },
+      { id: 91, topic: "Steganography" },
+      { id: 92, topic: "Malware Analysis" },
+      { id: 93, topic: "Digital Forensics" },
+      { id: 94, topic: "Dark Web & Anonymity" },
+      { id: 95, topic: "Firewall & WAF" },
+      { id: 96, topic: "Career Guidance" },
+      { id: 97, topic: "Networking Fundamentals" },
+      { id: 98, topic: "IP Addressing and Subnetting" },
+      { id: 99, topic: "OSI & TCP/IP Models" },
+      { id: 100, topic: "DNS, DHCP and Protocols" },
+      { id: 101, topic: "Wireshark Packet Analysis" },
+      { id: 102, topic: "Kali Linux Installation & Setup" },
+      { id: 103, topic: "Linux Commands Practical" },
+      { id: 104, topic: "Ethical Hacking Concepts" },
+      { id: 105, topic: "Footprinting & Reconnaissance" },
+      { id: 106, topic: "Network Scanning using Nmap" },
+      { id: 107, topic: "Enumeration Techniques" },
+      { id: 108, topic: "Vulnerability Assessment" },
+      { id: 109, topic: "System Hacking" },
+      { id: 110, topic: "Web Application Attacks" },
+      { id: 111, topic: "SQL Injection" },
+      { id: 112, topic: "XSS and CSRF" },
+      { id: 113, topic: "Sniffing & Spoofing" },
+      { id: 114, topic: "Session Hijacking" },
+      { id: 115, topic: "Python for Pentesting" },
+      { id: 116, topic: "Shell Scripting" },
+      { id: 117, topic: "Social Engineering" },
+      { id: 118, topic: "DoS & DDoS Attacks" },
+      { id: 119, topic: "Wireless Security" },
+      { id: 120, topic: "Mobile Security" },
+      { id: 121, topic: "Android Pentesting" },
+      { id: 122, topic: "Cryptography" },
+      { id: 123, topic: "Steganography" },
+      { id: 124, topic: "Malware Analysis" },
+      { id: 125, topic: "Digital Forensics" },
+      { id: 126, topic: "Dark Web & Anonymity" },
+      { id: 127, topic: "Firewall & WAF" },
+      { id: 128, topic: "Career Guidance" },
+      { id: 129, topic: "Networking Fundamentals" },
+      { id: 130, topic: "IP Addressing and Subnetting" },
+      { id: 131, topic: "OSI & TCP/IP Models" },
+      { id: 132, topic: "DNS, DHCP and Protocols" },
+      { id: 133, topic: "Wireshark Packet Analysis" },
+      { id: 134, topic: "Kali Linux Installation & Setup" },
+      { id: 135, topic: "Linux Commands Practical" },
+      { id: 136, topic: "Ethical Hacking Concepts" },
+      { id: 137, topic: "Footprinting & Reconnaissance" },
+      { id: 138, topic: "Network Scanning using Nmap" },
+      { id: 139, topic: "Enumeration Techniques" },
+      { id: 140, topic: "Vulnerability Assessment" },
+      { id: 141, topic: "System Hacking" },
+      { id: 142, topic: "Web Application Attacks" },
+      { id: 143, topic: "SQL Injection" },
+      { id: 144, topic: "XSS and CSRF" },
+      { id: 145, topic: "Sniffing & Spoofing" },
+      { id: 146, topic: "Session Hijacking" },
+      { id: 147, topic: "Python for Pentesting" },
+      { id: 148, topic: "Shell Scripting" },
+      { id: 149, topic: "Social Engineering" },
+      { id: 150, topic: "DoS & DDoS Attacks" },
+      { id: 151, topic: "Wireless Security" },
+      { id: 152, topic: "Mobile Security" },
+      { id: 153, topic: "Android Pentesting" },
+      { id: 154, topic: "Cryptography" },
+      { id: 155, topic: "Steganography" },
+      { id: 156, topic: "Malware Analysis" },
+      { id: 157, topic: "Digital Forensics" }
+    ];
+
+    const grid = document.getElementById("grid");
+    const search = document.getElementById("search");
+    const viewer = document.getElementById("viewer");
+    const pdfFrame = document.getElementById("pdfFrame");
+    let cards = [];
+
+    function buildGrid() {
+      grid.innerHTML = "";
+      cards = [];
+
+      diaryData.forEach(day => {
+        const card = document.createElement("div");
+        card.className = "card";
+        
+        // Prepare data for searching (lowercase) - removed date from search text
+        card.dataset.searchText = `day ${day.id} ${day.topic}`.toLowerCase();
+
+        // 3-digit padded number for filename (e.g., Day_005.pdf)
+        const pdfFileName = `Day_${String(day.id).padStart(3, "0")}.pdf`;
+
+        // Removed Date Span from innerHTML
+        card.innerHTML = `
+          <div class="card-header">
+            <h3>Day ${day.id}</h3>
+          </div>
+          <p class="topic">${day.topic}</p>
+          <button onclick="openPDF('${pdfFileName}')">View Document</button>
+        `;
+
+        grid.appendChild(card);
+        cards.push(card);
+      });
+    }
+
+    function openPDF(fileName) {
+      pdfFrame.src = fileName;
+      viewer.classList.add("active");
+    }
+
+    function closeViewer() {
+      pdfFrame.src = "";
+      viewer.classList.remove("active");
+    }
+
+    // Close on click outside
+    viewer.addEventListener("click", e => {
+      if (e.target === viewer) closeViewer();
+    });
+
+    // Search Filtering
+    search.addEventListener("input", () => {
+      const value = search.value.toLowerCase();
+      cards.forEach(card => {
+        const text = card.dataset.searchText;
+        if (text.includes(value)) {
+          card.style.display = "flex";
+        } else {
+          card.style.display = "none";
+        }
+      });
+    });
+
+    // Initialize
+    buildGrid();
+  </script>
+
+</body>
+</html>
